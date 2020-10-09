@@ -1,0 +1,24 @@
+{
+  "name": "goit-nodejs-hw",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "test",
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hetman07/goit-nodejs-hw.git"
+  },
+  "author": "Viktoria Hetman",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hetman07/goit-nodejs-hw/issues"
+  },
+  "homepage": "https://github.com/hetman07/goit-nodejs-hw#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  }
+}
