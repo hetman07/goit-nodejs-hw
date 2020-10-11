@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/hetman07/goit-nodejs-hw#readme",
   "devDependencies": {
-    "nodemon": "^2.0.4"
+    "nodemon": "^2.0.4",
+    "yargs": "^16.0.3"
   }
 }
