@@ -22,10 +22,12 @@ function invokeAction({ action, id, name, email, phone }) {
 
     case "add":
       methodContacts.addContact(name, email, phone);
+
       break;
 
     case "remove":
-      console.log(methodContacts.removeContact(id));
+      methodContacts.removeContact(id);
+
       break;
 
     default:

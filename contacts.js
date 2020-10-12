@@ -8,35 +8,32 @@ module.exports = {
   listContacts: async function () {
     const data = await fsPromises.readFile(contactsPath, "utf-8");
     const users = await JSON.parse(data);
-    return console.log(users);
+    return console.table(users);
   },
 
   getContactById: async function (contactId) {
     const data = await fsPromises.readFile(contactsPath, "utf-8");
     const users = await JSON.parse(data);
-    const idFound = users.filter((contact) => {
+    const idFound = users.filter(contact => {
       if (contactId && contactId !== contact.id) {
         return false;
       }
       return true;
     });
-    return console.log(idFound);
+    return console.table(idFound);
   },
 
   removeContact: async function (contactId) {
     const data = await fsPromises.readFile(contactsPath, "utf-8");
     const users = await JSON.parse(data);
-    const idFound = users.filter((contact) => {
+    const idFound = await users.filter(contact => {
       if (contactId && contactId === contact.id) {
         return false;
       }
       return true;
     });
-    const newData = await fsPromises.writeFile(
-      contactsPath,
-      JSON.stringify(idFound)
-    );
-    return console.log(newData);
+
+    return console.table(idFound);
   },
 
   addContact: async function (name, email, phone) {
@@ -51,6 +48,6 @@ module.exports = {
 
     await fsPromises.writeFile(contactsPath, JSON.stringify(users));
 
-    return console.log(users);
+    return console.table(users);
   },
 };
