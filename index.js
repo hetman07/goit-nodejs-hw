@@ -1,36 +1,36 @@
 // index.js
 const yargs = require("yargs");
 const methodContacts = require("./contacts.js");
-console.log(methodContacts.listContacts());
+
 const argv = yargs
   .number("id")
   .string("action")
   .string("name")
   .string("email")
   .string("phone").argv;
-console.log(argv);
+
 // TODO: рефакторить
-// function invokeAction({ action, id, name, email, phone }) {
-//   switch (action) {
-//     case "list":
-//       // ...
-//       break;
+function invokeAction({ action, id, name, email, phone }) {
+  switch (action) {
+    case "list":
+      methodContacts.listContacts();
+      break;
 
-//     case "get":
-//       // ... id
-//       break;
+    case "get":
+      methodContacts.getContactById(id);
+      break;
 
-//     case "add":
-//       // ... name email phone
-//       break;
+    case "add":
+      methodContacts.addContact(name, email, phone);
+      break;
 
-//     case "remove":
-//       // ... id
-//       break;
+    case "remove":
+      console.log(methodContacts.removeContact(id));
+      break;
 
-//     default:
-//       console.warn("\x1B[31m Unknown action type!");
-//   }
-// }
+    default:
+      console.warn("\x1B[31m Unknown action type!");
+  }
+}
 
-// invokeAction(argv);
+invokeAction(argv);
