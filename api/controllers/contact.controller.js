@@ -1,61 +1,34 @@
-const fs = require("fs");
-const path = require("path");
-const { promises: fsPromises } = fs;
-
-const contactsPath = path.join(__dirname, "./db/contacts.json");
+const ErrorMessage = require("../errors/ErrorMessage");
+const methodContact = require("../../contacts");
 
 class ContactController {
-  // TODO: задокументировать каждую функцию
-  //   async listContacts(req, res, next) {
-  //     const data = await fsPromises.readFile(contactsPath, "utf-8");
-  //     const users = JSON.parse(data);
-  //     console.log(typeof users);
-  //     return console.log(typeof users);
-  //   }
-
-  listContacts() {
-    return console.log("hello world!");
+  //TODO: задокументировать каждую функцию
+  async getContacts(req, res) {
+    const contacts = await methodContact.listContacts();
+    return res.status(200).json(contacts);
   }
 
-  //   getContactById: async function (contactId) {
-  //     const data = await fsPromises.readFile(contactsPath, "utf-8");
-  //     const users = await JSON.parse(data);
-  //     const idFound = users.filter(contact => {
-  //       if (contactId && contactId !== contact.id) {
-  //         return false;
-  //       }
-  //       return true;
-  //     });
-  //     return console.table(idFound);
-  //   },
+  async getById(req, res, next) {
+    try {
+      const { contactId } = req.params;
 
-  //   removeContact: async function (contactId) {
-  //     const data = await fsPromises.readFile(contactsPath, "utf-8");
-  //     const users = await JSON.parse(data);
-  //     const idFound = await users.filter(contact => {
-  //       if (contactId && contactId === contact.id) {
-  //         return false;
-  //       }
-  //       return true;
-  //     });
+      const findId = await methodContact.getContactById(contactId);
+      if (!findId) {
+        throw new ErrorMessage();
+      }
 
-  //     return console.table(idFound);
-  //   },
+      return res.status(200).json(findId);
+    } catch (err) {
+      next(err);
+    }
+  }
 
-  //   addContact: async function (name, email, phone) {
-  //     const data = await fsPromises.readFile(contactsPath, "utf-8");
-  //     const users = await JSON.parse(data);
-  //     await users.push({
-  //       id: users.length + 1,
-  //       name: `${name}`,
-  //       email: `${email}`,
-  //       phone: `${phone}`,
-  //     });
-
-  //     await fsPromises.writeFile(contactsPath, JSON.stringify(users));
-
-  //     return console.table(users);
-  //   },
+  async addContact(req, res) {
+    const { name, email, phone } = req.body;
+    const newContact = await methodContact.addContact(name, email, phone);
+    console.log("newContact: ", newContact);
+    return res.status(201).json(newContact);
+  }
 }
 
 module.exports = new ContactController();

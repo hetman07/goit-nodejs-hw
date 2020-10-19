@@ -7,20 +7,17 @@ module.exports = {
   // TODO: задокументировать каждую функцию
   listContacts: async function () {
     const data = await fsPromises.readFile(contactsPath, "utf-8");
-    const users = await JSON.parse(data);
-    return console.table(users);
+    const users = JSON.parse(data);
+    return users;
   },
 
   getContactById: async function (contactId) {
     const data = await fsPromises.readFile(contactsPath, "utf-8");
-    const users = await JSON.parse(data);
-    const idFound = users.filter(contact => {
-      if (contactId && contactId !== contact.id) {
-        return false;
-      }
-      return true;
+    const users = JSON.parse(data);
+    const idFound = users.find(contact => {
+      return parseInt(contactId) === contact.id;
     });
-    return console.table(idFound);
+    return idFound;
   },
 
   removeContact: async function (contactId) {

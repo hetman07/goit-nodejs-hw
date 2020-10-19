@@ -1,10 +1,10 @@
 const express = require("express");
-const cors = require("cors");
-const morgan = require("morgan");
+// const cors = require("cors");
+// const morgan = require("morgan");
 const contactRouter = require("./routers/contact.router");
 require("dotenv").config();
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 8080;
 
 module.exports = class Server {
   constructor() {
@@ -23,13 +23,13 @@ module.exports = class Server {
   }
 
   initMiddleware() {
-    this.server.use(express.json);
+    this.server.use(express.json());
     // this.server.use(cors({ origin: `http://localhost:${PORT}` }));
     // this.server.use(morgan("dev"));
   }
 
   initRouters() {
-    this.server.use("/", contactRouter);
+    this.server.use("/api/contacts", contactRouter);
   }
 
   startListening() {
