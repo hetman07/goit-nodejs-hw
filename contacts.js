@@ -7,14 +7,14 @@ module.exports = {
   // TODO: задокументировать каждую функцию
   listContacts: async function () {
     const data = await fsPromises.readFile(contactsPath, "utf-8");
-    const users = JSON.parse(data);
-    return users;
+    const contacts = JSON.parse(data);
+    return contacts;
   },
 
   getContactById: async function (contactId) {
     const data = await fsPromises.readFile(contactsPath, "utf-8");
-    const users = JSON.parse(data);
-    const idFound = users.find(contact => {
+    const contacts = JSON.parse(data);
+    const idFound = await contacts.find(contact => {
       return parseInt(contactId) === contact.id;
     });
     return idFound;
@@ -22,9 +22,9 @@ module.exports = {
 
   removeContact: async function (contactId) {
     const data = await fsPromises.readFile(contactsPath, "utf-8");
-    const users = await JSON.parse(data);
-    const idFound = await users.filter(contact => {
-      if (contactId && contactId === contact.id) {
+    const contacts = JSON.parse(data);
+    const idFound = await contacts.filter(contact => {
+      if (parseInt(contactId) === contact.id) {
         return false;
       }
       return true;
@@ -35,16 +35,35 @@ module.exports = {
 
   addContact: async function (name, email, phone) {
     const data = await fsPromises.readFile(contactsPath, "utf-8");
-    const users = await JSON.parse(data);
-    await users.push({
-      id: users.length + 1,
+    const contacts = JSON.parse(data);
+    await contacts.push({
+      id: contacts.length + 1,
       name: `${name}`,
       email: `${email}`,
       phone: `${phone}`,
     });
 
-    await fsPromises.writeFile(contactsPath, JSON.stringify(users));
+    await fsPromises.writeFile(contactsPath, JSON.stringify(contacts));
 
-    return console.table(users);
+    return contacts;
+  },
+
+  updateContact: async function (contactId, name, email, phone) {
+    const data = await fsPromises.readFile(contactsPath, "utf-8");
+    const contacts = JSON.parse(data);
+    const id = +contactId;
+    console.log("id", id);
+
+    const updContact = await contacts.find(contact => {
+      return parseInt(contactId) === contact.id;
+    });
+    const newDateContact = {
+      id: contactId,
+      ...rest,
+    };
+    console.log("updContact", updContact);
+    console.log("newDateContact", newDateContact);
+    updContact = newDateContact;
+    return contacts;
   },
 };
