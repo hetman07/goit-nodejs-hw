@@ -2,10 +2,9 @@ const Joi = require("joi");
 
 const ErrorMessage = require("../errors/ErrorMessage");
 const ErrorAddContact = require("../errors/ErrorAddContact");
-const methodContact = require("../../contacts");
+const methodContact = require("../controllers/contacts");
 
 class ContactController {
-  //TODO: задокументировать каждую функцию
   async getContacts(req, res) {
     const contacts = await methodContact.listContacts();
     return res.status(200).json(contacts);
@@ -69,17 +68,13 @@ class ContactController {
     try {
       const { contactId } = req.params;
       const { name, email, phone } = req.body;
-
+      console.log("...req.body", req.body);
       const findId = await methodContact.getContactById(contactId);
       if (!findId) {
         throw new ErrorMessage();
       }
-      const updContact = await methodContact.updateContact(
-        contactId,
-        name,
-        email,
-        phone,
-      );
+      const updContact = await methodContact.updateContact(contactId, req.body);
+
       return res.status(200).json(updContact);
     } catch (err) {
       next(err);

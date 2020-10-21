@@ -1,6 +1,6 @@
 const express = require("express");
-// const cors = require("cors");
-// const morgan = require("morgan");
+const cors = require("cors");
+const morgan = require("morgan");
 const contactRouter = require("./routers/contact.router");
 require("dotenv").config();
 
@@ -23,9 +23,9 @@ module.exports = class Server {
   }
 
   initMiddleware() {
+    this.server.use(cors({ origin: `http://localhost:${PORT}` }));
     this.server.use(express.json());
-    // this.server.use(cors({ origin: `http://localhost:${PORT}` }));
-    // this.server.use(morgan("dev"));
+    this.server.use(morgan("dev"));
   }
 
   initRouters() {

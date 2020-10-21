@@ -2,7 +2,8 @@ const fs = require("fs");
 const path = require("path");
 const { promises: fsPromises } = fs;
 
-const contactsPath = path.join(__dirname, "./db/contacts.json");
+const contactsPath = path.join(__dirname, "../../db/contacts.json");
+
 module.exports = {
   // TODO: задокументировать каждую функцию
   listContacts: async function () {
@@ -23,47 +24,42 @@ module.exports = {
   removeContact: async function (contactId) {
     const data = await fsPromises.readFile(contactsPath, "utf-8");
     const contacts = JSON.parse(data);
-    const idFound = await contacts.filter(contact => {
-      if (parseInt(contactId) === contact.id) {
-        return false;
-      }
-      return true;
+    const newContactsAfterDelete = await contacts.filter(contact => {
+      parseInt(contactId) !== contact.id;
     });
-
-    return console.table(idFound);
+    await fsPromises.writeFile(
+      contactsPath,
+      JSON.stringify(newContactsAfterDelete),
+    );
   },
 
   addContact: async function (name, email, phone) {
     const data = await fsPromises.readFile(contactsPath, "utf-8");
     const contacts = JSON.parse(data);
-    await contacts.push({
+    const newAddContact = {
       id: contacts.length + 1,
       name: `${name}`,
       email: `${email}`,
       phone: `${phone}`,
-    });
+    };
+    await contacts.push(newAddContact);
 
     await fsPromises.writeFile(contactsPath, JSON.stringify(contacts));
 
-    return contacts;
+    return newAddContact;
   },
 
-  updateContact: async function (contactId, name, email, phone) {
+  updateContact: async function (contactId, ...rest) {
     const data = await fsPromises.readFile(contactsPath, "utf-8");
     const contacts = JSON.parse(data);
-    const id = +contactId;
-    console.log("id", id);
+    const id = +contactId - 1;
 
-    const updContact = await contacts.find(contact => {
-      return parseInt(contactId) === contact.id;
-    });
-    const newDateContact = {
-      id: contactId,
-      ...rest,
+    contacts[id] = await {
+      ...contacts[id],
+      ...rest[0],
     };
-    console.log("updContact", updContact);
-    console.log("newDateContact", newDateContact);
-    updContact = newDateContact;
-    return contacts;
+
+    await fsPromises.writeFile(contactsPath, JSON.stringify(contacts));
+    return contacts[id];
   },
 };
