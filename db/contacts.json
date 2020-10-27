@@ -1,62 +1,92 @@
 [
   {
-    "id": 1,
+    "_id": { "$oid": "5eb074232c30a1378dacdbda" },
     "name": "Allen Raymond",
     "email": "nulla.ante@vestibul.co.uk",
-    "phone": "(992) 914-3792"
+    "phone": "(992) 914-3792",
+    "subscription": "free",
+    "password": "password",
+    "token": ""
   },
   {
-    "id": 2,
+    "_id": { "$oid": "5eb074232c30a1378dacdbdb" },
     "name": "Chaim Lewis",
     "email": "dui.in@egetlacus.ca",
-    "phone": "(294) 840-6685"
+    "phone": "(294) 840-6685",
+    "subscription": "pro",
+    "password": "password",
+    "token": ""
   },
   {
-    "id": 3,
+    "_id": { "$oid": "5eb074232c30a1378dacdbdc" },
     "name": "Kennedy Lane",
     "email": "mattis.Cras@nonenimMauris.net",
-    "phone": "(542) 451-7038"
+    "phone": "(542) 451-7038",
+    "subscription": "free",
+    "password": "password",
+    "token": ""
   },
   {
-    "id": 4,
+    "_id": { "$oid": "5eb074232c30a1378dacdbdd" },
     "name": "Wylie Pope",
     "email": "est@utquamvel.net",
-    "phone": "(692) 802-2949"
+    "phone": "(692) 802-2949",
+    "subscription": "pro",
+    "password": "password",
+    "token": ""
   },
   {
-    "id": 5,
+    "_id": { "$oid": "5eb074232c30a1378dacdbde" },
     "name": "Cyrus Jackson",
     "email": "nibh@semsempererat.com",
-    "phone": "(501) 472-5218"
+    "phone": "(501) 472-5218",
+    "subscription": "premium",
+    "password": "password",
+    "token": ""
   },
   {
-    "id": 6,
+    "_id": { "$oid": "5eb074232c30a1378dacdbdf" },
     "name": "Abbot Franks",
     "email": "scelerisque@magnis.org",
-    "phone": "(186) 568-3720"
+    "phone": "(186) 568-3720",
+    "subscription": "premium",
+    "password": "password",
+    "token": ""
   },
   {
-    "id": 7,
+    "_id": { "$oid": "5eb074232c30a1378dacdbe0" },
     "name": "Reuben Henry",
     "email": "pharetra.ut@dictum.co.uk",
-    "phone": "(715) 598-5792"
+    "phone": "(715) 598-5792",
+    "subscription": "premium",
+    "password": "password",
+    "token": ""
   },
   {
-    "id": 8,
+    "_id": { "$oid": "5eb074232c30a1378dacdbe1" },
     "name": "Simon Morton",
     "email": "dui.Fusce.diam@Donec.com",
-    "phone": "(233) 738-2360"
+    "phone": "(233) 738-2360",
+    "subscription": "pro",
+    "password": "password",
+    "token": ""
   },
   {
-    "id": 9,
+    "_id": { "$oid": "5eb074232c30a1378dacdbe2" },
     "name": "Thomas Lucas",
     "email": "nec@Nulla.com",
-    "phone": "(704) 398-7993"
+    "phone": "(704) 398-7993",
+    "subscription": "free",
+    "password": "password",
+    "token": ""
   },
   {
-    "id": 10,
+    "_id": { "$oid": "5eb074232c30a1378dacdbe3" },
     "name": "Alec Howard",
     "email": "Donec.elementum@scelerisquescelerisquedui.net",
-    "phone": "(748) 206-2688"
+    "phone": "(748) 206-2688",
+    "subscription": "premium",
+    "password": "password",
+    "token": ""
   }
 ]

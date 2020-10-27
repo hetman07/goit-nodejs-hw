@@ -1,20 +1,26 @@
 const Joi = require("joi");
+const {
+  Types: { ObjectId },
+} = require("mongoose");
+
+const ContactModel = require("./contact.model");
 
 const ErrorMessage = require("../errors/ErrorMessage");
 const ErrorAddContact = require("../errors/ErrorAddContact");
-const methodContact = require("../controllers/contacts");
+const methodContact = require("./contact.method");
 
 class ContactController {
+  //вытянуть все контакты
   async getContacts(req, res) {
-    const contacts = await methodContact.listContacts();
+    const contacts = await ContactModel.find();
     return res.status(200).json(contacts);
   }
-
+  //поиск контакта по id
   async getById(req, res, next) {
     try {
       const { contactId } = req.params;
 
-      const findId = await methodContact.getContactById(contactId);
+      const findId = await ContactModel.findById(contactId);
       if (!findId) {
         throw new ErrorMessage();
       }
@@ -23,11 +29,10 @@ class ContactController {
       next(err);
     }
   }
-
+  //добавление нового контакта
   async addContact(req, res, next) {
     try {
-      const { name, email, phone } = req.body;
-      const newContact = await methodContact.addContact(name, email, phone);
+      const newContact = await ContactModel.create(req.body);
       return res.status(201).json(newContact);
     } catch (err) {
       next(err);
@@ -37,8 +42,11 @@ class ContactController {
   validateAddContact(req, res, next) {
     const validationRules = Joi.object({
       name: Joi.string().required(),
-      email: Joi.string().required(),
+      email: Joi.string().email().required(),
       phone: Joi.string().required(),
+      subscription: Joi.string().required(),
+      password: Joi.string().required(),
+      token: Joi.string(),
     });
 
     const validationResult = validationRules.validate(req.body);
@@ -53,11 +61,11 @@ class ContactController {
     try {
       const { contactId } = req.params;
 
-      const findId = await methodContact.getContactById(contactId);
-      if (!findId) {
+      const deleteContactById = await ContactModel.findByIdAndDelete(contactId);
+      if (!deleteContactById) {
         throw new ErrorMessage();
       }
-      const deleteContact = await methodContact.removeContact(contactId);
+
       return res.status(200).json({ message: "contact deleted" });
     } catch (err) {
       next(err);
@@ -67,15 +75,20 @@ class ContactController {
   async updateId(req, res, next) {
     try {
       const { contactId } = req.params;
-      const { name, email, phone } = req.body;
-      console.log("...req.body", req.body);
-      const findId = await methodContact.getContactById(contactId);
-      if (!findId) {
+
+      const updateContactById = await ContactModel.findByIdAndUpdate(
+        contactId,
+        {
+          $set: req.body,
+        },
+        {
+          new: true,
+        },
+      );
+      if (!updateContactById) {
         throw new ErrorMessage();
       }
-      const updContact = await methodContact.updateContact(contactId, req.body);
-
-      return res.status(200).json(updContact);
+      return res.status(200).json(updateContactById);
     } catch (err) {
       next(err);
     }
@@ -86,6 +99,9 @@ class ContactController {
       name: Joi.string(),
       email: Joi.string(),
       phone: Joi.string(),
+      subscription: Joi.string(),
+      password: Joi.string(),
+      token: Joi.string(),
     });
 
     const validationResult = validationRules.validate(req.body);
@@ -93,6 +109,18 @@ class ContactController {
     if (validationResult.error) {
       throw new ErrorAddContact();
     }
+    next();
+  }
+
+  validateId(req, res, next) {
+    const {
+      params: { contactId },
+    } = req;
+
+    if (!ObjectId.isValid(contactId)) {
+      return res.status(404).json({ message: "Id is not valid" });
+    }
+
     next();
   }
 }
