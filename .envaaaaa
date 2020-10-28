@@ -1,5 +1,0 @@
-PORT=3000
-DB_PASSWORD=QMFkw0pqzORjsLLm
-DB_ADMIN=admin
-URL=mongodb+srv://admin:QMFkw0pqzORjsLLm@cluster0.2sxwp.mongodb.net/db-contacts?retryWrites=true&w=majority
-MONGO_DB_URL=mongodb+srv://admin:QMFkw0pqzORjsLLm@cluster0.2sxwp.mongodb.net/db-contacts?retryWrites=true&w=majority
