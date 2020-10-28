@@ -56,7 +56,7 @@ class ContactController {
     }
     next();
   }
-
+  //удаление контакта
   async deleteId(req, res, next) {
     try {
       const { contactId } = req.params;
@@ -71,7 +71,7 @@ class ContactController {
       next(err);
     }
   }
-
+  //обновление контакта
   async updateId(req, res, next) {
     try {
       const { contactId } = req.params;
@@ -111,7 +111,7 @@ class ContactController {
     }
     next();
   }
-
+  //валидация коректного id проверка его на тип
   validateId(req, res, next) {
     const {
       params: { contactId },

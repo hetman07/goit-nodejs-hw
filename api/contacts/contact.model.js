@@ -26,6 +26,7 @@ const ContactSchema = new Schema({
   token: {
     type: String,
     required: false,
+    default: "",
   },
 });
 
