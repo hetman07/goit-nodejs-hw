@@ -7,7 +7,6 @@ const ContactModel = require("./contact.model");
 
 const ErrorMessage = require("../errors/ErrorMessage");
 const ErrorAddContact = require("../errors/ErrorAddContact");
-const methodContact = require("./contact.method");
 
 class ContactController {
   //вытянуть все контакты

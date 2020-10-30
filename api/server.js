@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const contactRouter = require("./contacts/contact.router");
+const userRouter = require("./users/user.router");
 require("dotenv").config();
 
 const PORT = process.env.PORT || 8080;
@@ -45,6 +46,7 @@ module.exports = class Server {
 
   initRouters() {
     this.server.use("/api/contacts", contactRouter);
+    this.server.use("/auth", userRouter);
   }
 
   startListening() {
