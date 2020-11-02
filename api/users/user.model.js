@@ -24,4 +24,12 @@ const UserSchema = new Schema({
   },
 });
 
+UserSchema.static.updateToken = updateToken;
+
+async function updateToken(id, newToken) {
+  return this.findByIdAndUpdate(id, {
+    token: newToken,
+  });
+}
+
 module.exports = mongoose.model("User", UserSchema);

@@ -1,22 +1,13 @@
-module.exports = class ErrorMessage extends Error {
+exports.ErrorFindUser = class ErrorFindUser extends Error {
   constructor(name) {
     super(name);
-    this.status = 404;
-    this.stack = "";
-    this.message = "Not found";
-  }
-};
-
-module.exports = class ErrorFindUser extends Error {
-  constructor(name) {
-    super(name);
-    this.status = 404;
+    this.status = 409;
     this.stack = "";
     this.message = "Email in use";
   }
 };
 
-module.exports = class ErrorRegistrUser extends Error {
+exports.ErrorRegistrUser = class ErrorRegistrUser extends Error {
   constructor(name) {
     super(name);
     this.status = 404;
@@ -25,7 +16,7 @@ module.exports = class ErrorRegistrUser extends Error {
   }
 };
 
-module.exports = class ErrorNotValidateUser extends Error {
+exports.ErrorNotValidateUser = class ErrorNotValidateUser extends Error {
   constructor(name) {
     super(name);
     this.status = 404;
@@ -34,7 +25,7 @@ module.exports = class ErrorNotValidateUser extends Error {
   }
 };
 
-module.exports = class UnauthorizedError extends Error {
+exports.UnauthorizedError = class UnauthorizedError extends Error {
   constructor(name) {
     super(name);
     this.status = 401;

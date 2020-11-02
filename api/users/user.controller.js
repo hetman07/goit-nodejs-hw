@@ -6,11 +6,25 @@ const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const UserModel = require("./user.model");
+const {
+  ErrorRegistrUser,
+  ErrorFindUser,
+  ErrorNotValidateUser,
+  UnauthorizedError,
+} = require("../errors/ErrorMessage");
 
 class UserController {
-constructor() {
+  constructor() {
     this.costFactor = 10;
-}
+  }
+
+  get validateUniqueEmail() {
+    return this._validateUniqueEmail.bind(this);
+  }
+
+  get login() {
+    return this._login.bind(this);
+  }
 
   validateEmailPassword(req, res, next) {
     const validationRules = Joi.object({
@@ -26,54 +40,85 @@ constructor() {
     next();
   }
 
-  validateEmailUser(req, res, next) {
-    const { emailUser } = req.body.email;
-    console.log("email", email);
-    const findEmail = await UserModel.find({ email: emailUser });
-    if (findEmail) {
-      throw new ErrorFindUser();
+  async findUserByEmail(email) {
+    const findUser = await UserModel.findOne({ email: email });
+    return findUser;
+  }
+
+  async _validateUniqueEmail(req, res, next) {
+    try {
+      const { email } = req.body;
+
+      const user = await this.findUserByEmail(email);
+
+      if (user) {
+        throw new ErrorFindUser();
+      }
+      next();
+    } catch (err) {
+      next(err);
     }
-    next();
   }
 
   async registerUser(req, res, next) {
     try {
-      const {password} = req.body;
-      const hashedPassword = await bcryptjs.hash(password, this.costFactor);
+      const { password } = req.body;
+      const hashedPassword = await bcryptjs.hash(password, 10);
       const addUser = await UserModel.create({
-       ...req.body,
-       password: hashedPassword,
-    });
-    //в return убрать секретные поля password/token
-      return res.status(201).json(addUser);
+        ...req.body,
+        password: hashedPassword,
+      });
+      //в return убрать секретные поля password/token
+      return res.status(201).json({
+        users: {
+          email: addUser.email,
+          subscription: addUser.subscription,
+        },
+      });
     } catch (err) {
       console.error(err);
       next(err);
     }
   }
 
-  async login(req, res, next) {
-      try{
-        const { emailUser, passwordUser } = req.body;
-        console.log("email", email);
-        const findUser = await UserModel.findUserByEmail({ email: emailUser });
-        const isPassword = await bcryptjs.compare(passwordUser, findUser.password);
+  async _login(req, res, next) {
+    try {
+      const { email, password } = req.body;
 
-        if (!findEmail || !isPassword) {
+      const findUser = await this.findUserByEmail(email);
+
+      if (findUser) {
+        const isPassword = await bcryptjs.compare(password, findUser.password);
+
+        if (!isPassword) {
           throw new ErrorNotValidateUser();
         }
-        const token = await jwt.sign({
-            userId: user._id 
-        }, process.env.JWT_SECRET, {
-            expiresIn: 2 * 24 * 60 * 60,
-        });
-        await UserModel.updateToken(user._id, token);
-        return res.status(200).json({token});
-
-      } catch(err) {
-        console.error(err);
-        next(err);
       }
+      if (!findUser) {
+        throw new ErrorNotValidateUser();
+      }
+
+      const token = await jwt.sign(
+        {
+          id: findUser._id,
+        },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: 2 * 24 * 60 * 60,
+        },
+      );
+      await UserModel.findByIdAndUpdate(findUser._id, { token });
+      return res.status(200).json({
+        token,
+        user: {
+          email: findUser.email,
+          subscription: findUser.subscription,
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      next(err);
+    }
   }
 
   //middleware для валидации token
@@ -105,9 +150,47 @@ constructor() {
       // і передати обробку запиту на наступний middleware
       req.user = user;
       req.token = token;
-
       next();
     } catch (err) {
+      next(err);
+    }
+  }
+
+  async logout(req, res, next) {
+    try {
+      const { _id } = req.user;
+
+      const findUser = await UserModel.findByIdAndUpdate(
+        _id,
+        {
+          $set: {
+            token: "",
+          },
+        },
+        {
+          new: true,
+        },
+      );
+
+      return res.status(204).send("No Content");
+    } catch (err) {
+      console.log(err);
+      next(err);
+    }
+  }
+
+  async current(req, res, next) {
+    try {
+      const { _id } = req.user;
+
+      const findUser = await UserModel.findById(_id);
+
+      return res.status(200).json({
+        email: findUser.email,
+        subscription: findUser.subscription,
+      });
+    } catch (err) {
+      console.log(err);
       next(err);
     }
   }

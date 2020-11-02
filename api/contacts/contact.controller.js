@@ -4,6 +4,7 @@ const {
 } = require("mongoose");
 
 const ContactModel = require("./contact.model");
+const aggregateQuery = ContactModel.aggregate();
 
 const ErrorMessage = require("../errors/ErrorMessage");
 const ErrorAddContact = require("../errors/ErrorAddContact");
@@ -12,6 +13,7 @@ class ContactController {
   //вытянуть все контакты
   async getContacts(req, res) {
     const contacts = await ContactModel.find();
+
     return res.status(200).json(contacts);
   }
   //поиск контакта по id
