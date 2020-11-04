@@ -19,4 +19,11 @@ router.post("/auth/logout", UserController.authorize, UserController.logout);
 
 router.get("/users/current", UserController.authorize, UserController.current);
 
+router.patch(
+  "/users",
+  UserController.authorize,
+  UserController.validateUpdateUser,
+  UserController.updateUserSub,
+);
+
 module.exports = router;

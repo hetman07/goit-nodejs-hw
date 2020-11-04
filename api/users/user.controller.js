@@ -194,6 +194,46 @@ class UserController {
       next(err);
     }
   }
+
+  validateUpdateUser(req, res, next) {
+    const validationRules = Joi.object({
+      // email: Joi.string(),
+      // password: Joi.string(),
+      subscription: Joi.string().array.includes.required(),
+      // token: Joi.string(),
+    });
+
+    const validationResult = validationRules.validate(req.body);
+
+    if (validationResult.error) {
+      throw new ErrorAddContact();
+    }
+    next();
+  }
+
+  //обновление subscription user
+  async updateUserSub(req, res, next) {
+    try {
+      const { _id } = req.user;
+      const sub = req.body.subscription;
+      //delete req.body.email;
+      const findUser = await UserModel.findByIdAndUpdate(
+        _id,
+        {
+          $set: { subscription: req.body.subscription },
+        },
+        {
+          new: true,
+        },
+      );
+      // if (!findUser) {
+      //   throw new ErrorMessage();
+      // }
+      return res.status(200).json(findUser);
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new UserController();
