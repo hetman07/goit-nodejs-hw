@@ -9,18 +9,6 @@ const aggregateQuery = ContactModel.aggregate();
 const ErrorMessage = require("../errors/ErrorMessage");
 const ErrorAddContact = require("../errors/ErrorAddContact");
 
-// const myCustomLabels = {
-//   totalDocs: "itemCount",
-//   docs: "itemsList",
-//   limit: "perPage",
-//   page: "currentPage",
-//   nextPage: "next",
-//   prevPage: "prev",
-//   totalPages: "pageCount",
-//   pagingCounter: "slNo",
-//   meta: "paginator",
-// };
-
 const options = {
   page: 1,
   limit: 20,
@@ -29,14 +17,6 @@ const options = {
 };
 
 class ContactController {
-  //вытянуть все контакты
-  // async getContacts(req, res) {
-  //   console.log("limit: ", limit);
-
-  //   const contacts = await ContactModel.find();
-
-  //   return res.status(200).json(contacts);
-  // }
   //вытянуть отсортированные контакты с пагинацией
   async getContacts(req, res, next) {
     try {
@@ -45,7 +25,6 @@ class ContactController {
         page: pageQuery,
         sub: subscriptionQuery,
       } = req.query;
-      console.log(limitQuery, pageQuery, subscriptionQuery);
 
       if (!limitQuery && !pageQuery && !subscriptionQuery) {
         const contacts = await ContactModel.find();
@@ -60,14 +39,12 @@ class ContactController {
           },
         );
 
-        console.log("contacts: ", contacts);
         return res.status(200).json(contacts);
       } else if (subscriptionQuery && !limitQuery && !pageQuery) {
         const contacts = await ContactModel.find({
           subscription: subscriptionQuery,
         });
 
-        console.log("contacts: ", contacts);
         return res.status(200).json(contacts);
       } else {
         return res.status(404).json({ message: "It is wrong params" });

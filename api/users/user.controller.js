@@ -11,6 +11,7 @@ const {
   ErrorFindUser,
   ErrorNotValidateUser,
   UnauthorizedError,
+  ErrorUpdateUser,
 } = require("../errors/ErrorMessage");
 
 class UserController {
@@ -199,14 +200,14 @@ class UserController {
     const validationRules = Joi.object({
       // email: Joi.string(),
       // password: Joi.string(),
-      subscription: Joi.string().array.includes.required(),
+      subscription: Joi.string().valid("free", "pro", "premium").required(),
       // token: Joi.string(),
     });
 
     const validationResult = validationRules.validate(req.body);
 
     if (validationResult.error) {
-      throw new ErrorAddContact();
+      throw new ErrorUpdateUser();
     }
     next();
   }
@@ -220,16 +221,19 @@ class UserController {
       const findUser = await UserModel.findByIdAndUpdate(
         _id,
         {
-          $set: { subscription: req.body.subscription },
+          $set: { subscription: sub },
         },
         {
           new: true,
         },
       );
-      // if (!findUser) {
-      //   throw new ErrorMessage();
-      // }
-      return res.status(200).json(findUser);
+
+      return res.status(200).json({
+        user: {
+          email: findUser.email,
+          subscription: findUser.subscription,
+        },
+      });
     } catch (err) {
       next(err);
     }

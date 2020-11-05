@@ -33,3 +33,12 @@ exports.UnauthorizedError = class UnauthorizedError extends Error {
     this.message = "User not authorized";
   }
 };
+
+exports.ErrorUpdateUser = class ErrorUpdateUser extends Error {
+  constructor(name) {
+    super(name);
+    this.status = 404;
+    this.stack = "";
+    this.message = "Subscription is wrong.";
+  }
+};
