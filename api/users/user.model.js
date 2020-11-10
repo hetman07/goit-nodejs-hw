@@ -1,27 +1,20 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
-const mongoosePaginate = require("mongoose-paginate-v2");
 
-const ContactSchema = new Schema({
-  name: {
-    type: String,
-    required: true,
-  },
+const UserSchema = new Schema({
   email: {
     type: String,
     required: true,
     unique: true,
   },
-  phone: {
+  password: {
     type: String,
     required: true,
   },
   subscription: {
     type: String,
-    required: true,
-  },
-  password: {
-    type: String,
+    enum: ["free", "pro", "premium"],
+    default: "free",
     required: true,
   },
   token: {
@@ -31,6 +24,12 @@ const ContactSchema = new Schema({
   },
 });
 
-ContactSchema.plugin(mongoosePaginate);
+UserSchema.static.updateToken = updateToken;
 
-module.exports = mongoose.model("Contact", ContactSchema);
+async function updateToken(id, newToken) {
+  return this.findByIdAndUpdate(id, {
+    token: newToken,
+  });
+}
+
+module.exports = mongoose.model("User", UserSchema);

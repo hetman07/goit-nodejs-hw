@@ -4,16 +4,54 @@ const {
 } = require("mongoose");
 
 const ContactModel = require("./contact.model");
+const aggregateQuery = ContactModel.aggregate();
 
 const ErrorMessage = require("../errors/ErrorMessage");
 const ErrorAddContact = require("../errors/ErrorAddContact");
-const methodContact = require("./contact.method");
+
+const options = {
+  page: 1,
+  limit: 20,
+  sort: { subscription: 1 },
+  //customLabels: myCustomLabels,
+};
 
 class ContactController {
-  //вытянуть все контакты
-  async getContacts(req, res) {
-    const contacts = await ContactModel.find();
-    return res.status(200).json(contacts);
+  //вытянуть отсортированные контакты с пагинацией
+  async getContacts(req, res, next) {
+    try {
+      const {
+        limit: limitQuery,
+        page: pageQuery,
+        sub: subscriptionQuery,
+      } = req.query;
+
+      if (!limitQuery && !pageQuery && !subscriptionQuery) {
+        const contacts = await ContactModel.find();
+
+        return res.status(200).json(contacts);
+      } else if ((limitQuery || pageQuery) && !subscriptionQuery) {
+        const contacts = await ContactModel.paginate(
+          {},
+          { page: pageQuery || 1, limit: limitQuery || 10 },
+          function (err, result) {
+            return result.docs;
+          },
+        );
+
+        return res.status(200).json(contacts);
+      } else if (subscriptionQuery && !limitQuery && !pageQuery) {
+        const contacts = await ContactModel.find({
+          subscription: subscriptionQuery,
+        });
+
+        return res.status(200).json(contacts);
+      } else {
+        return res.status(404).json({ message: "It is wrong params" });
+      }
+    } catch (err) {
+      next(err);
+    }
   }
   //поиск контакта по id
   async getById(req, res, next) {

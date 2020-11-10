@@ -4,11 +4,13 @@ const ContactController = require("./contact.controller");
 const router = express.Router();
 
 router.get("/", ContactController.getContacts);
+
 router.get(
   "/:contactId",
   ContactController.validateId,
   ContactController.getById,
 );
+
 router.post(
   "/",
   ContactController.validateAddContact,
