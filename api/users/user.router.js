@@ -1,4 +1,6 @@
 const express = require("express");
+const multer = require("multer");
+const upload = multer({ dest: "public/images/" });
 const router = express.Router();
 const UserController = require("./user.controller");
 
@@ -24,6 +26,14 @@ router.patch(
   UserController.authorize,
   UserController.validateUpdateUser,
   UserController.updateUserSub,
+);
+
+//router для загрузки и сохранения статических файлов
+router.post(
+  "/public/images",
+  upload.single("avatar"),
+  UserController.minifyImage,
+  UserController.returnImage,
 );
 
 module.exports = router;

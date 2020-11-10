@@ -2,6 +2,8 @@ const mongoose = require("mongoose"); //подкл.к БД исп метод con
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
+
+const path = require("path");
 const contactRouter = require("./contacts/contact.router");
 const userRouter = require("./users/user.router");
 require("dotenv").config();
@@ -29,6 +31,7 @@ module.exports = class Server {
     this.server.use(cors({ origin: `http://localhost:${PORT}` }));
     this.server.use(express.json());
     this.server.use(morgan("dev"));
+    this.server.use(express.static("public/images"));
   }
 
   async connectDb() {
