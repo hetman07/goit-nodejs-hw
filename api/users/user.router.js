@@ -1,8 +1,8 @@
 const express = require("express");
-const multer = require("multer");
-const upload = multer({ dest: "public/images/" });
+
 const router = express.Router();
 const UserController = require("./user.controller");
+const UserMiddleware = require("./user.middleware");
 
 router.post(
   "/auth/register",
@@ -31,9 +31,9 @@ router.patch(
 //router для загрузки и сохранения статических файлов
 router.post(
   "/public/images",
-  upload.single("avatar"),
-  UserController.minifyImage,
-  UserController.returnImage,
+  UserMiddleware.upload.single("avatar"), //метод single ждет одну картинку avatar в теле запроса будет наш файл для загрузки
+  UserMiddleware.minifyImage,
+  UserMiddleware.returnImage,
 );
 
 module.exports = router;
