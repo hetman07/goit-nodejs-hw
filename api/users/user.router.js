@@ -8,6 +8,7 @@ router.post(
   "/auth/register",
   UserController.validateEmailPassword,
   UserController.validateUniqueEmail,
+
   UserController.registerUser,
 );
 
@@ -32,6 +33,7 @@ router.patch(
 router.post(
   "/public/images",
   UserMiddleware.upload.single("avatar"), //метод single ждет одну картинку avatar в теле запроса будет наш файл для загрузки
+  UserMiddleware.generatorAvatar,
   UserMiddleware.minifyImage,
   UserMiddleware.returnImage,
 );
