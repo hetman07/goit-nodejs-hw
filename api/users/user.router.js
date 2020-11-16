@@ -6,6 +6,7 @@ const UserMiddleware = require("./user.middleware");
 
 router.post(
   "/auth/register",
+  UserMiddleware.generatorAvatar, //созд аватарки при регистр
   UserController.validateEmailPassword,
   UserController.validateUniqueEmail,
 
@@ -30,9 +31,10 @@ router.patch(
 );
 
 //router для загрузки и сохранения статических файлов
-router.post(
+router.get(
   "/public/images",
-  UserMiddleware.upload.single("avatar"), //метод single ждет одну картинку avatar в теле запроса будет наш файл для загрузки
+  //UserMiddleware.upload.none(),
+  //UserMiddleware.upload.single("avatar"), //метод single ждет одну картинку avatar в теле запроса будет наш файл для загрузки
   UserMiddleware.generatorAvatar,
   UserMiddleware.minifyImage,
   UserMiddleware.returnImage,

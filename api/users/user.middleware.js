@@ -2,18 +2,24 @@ const https = require("https");
 const got = require("got");
 const getFileType = require("file-type");
 const path = require("path");
-const fs = require("fs");
+//const fs = require("fs");
 const { promises: fsPromises } = require("fs");
 
+const { AvatarGenerator } = require("random-avatar-generator");
 const multer = require("multer");
 
 const imagemin = require("imagemin");
 const imageminJpegtran = require("imagemin-jpegtran");
 const imageminPngquant = require("imagemin-pngquant");
+const imageminSvgo = require("imagemin-svgo");
 
-const UserRandomAvatar = require("./user.generator");
-const pathTmp = path.join(__dirname, "../../public/tmp/avatar.jpg");
+//const UserRandomAvatar = require("./user.generator");
+const pathTmp = path.join(__dirname, "../../public/tmp/avatar.svg");
+const pathImg = path.join(__dirname, "../../public/images");
+
 console.log("pathTmp***", pathTmp);
+console.log("pathImg***", pathImg);
+
 //исп этот middleware для того что бы из файла вытянуть
 //расширение и при сохраннени на сервере его расширение
 //было сохранено
@@ -30,59 +36,64 @@ const upload = multer({ storage }); //куда будет сохр файл
 
 async function generatorAvatar(req, res, next) {
   try {
-    const generatAvatarUrl = UserRandomAvatar;
+    const generator = new AvatarGenerator();
+    let generatAvatarUrl = "";
+    // Simply get a random avatar
+    generatAvatarUrl = generator.generateRandomAvatar();
 
-    const request = await https.get(
-      `https://avataaars.io/?accessoriesType=Sunglasses&avatarStyle=Circl
-    e&clotheColor=PastelYellow&clotheType=BlazerShirt&eyeType=Default&eyebrowType=Ra
-    isedExcited&facialHairColor=Blonde&facialHairType=BeardMedium&hairColor=SilverGr
-    ay&hatColor=Black&mouthType=Disbelief&skinColor=Brown&topType=WinterHat2`,
-      res => {
-        console.log("res: ", res.statusCode);
-        console.log("res: ", res.headers);
-        console.log("res: ", res.pipe);
+    console.log("generatAvatarUrl", generatAvatarUrl);
 
-        const downloadFile = fs.writeFile(generatAvatarUrl, err => {
-          if (err) throw err;
+    const request = await https
+      .get(`${generatAvatarUrl}`, resp => {
+        let data = "";
+
+        // A chunk of data has been recieved.
+        resp.on("data", chunk => {
+          data += chunk;
         });
 
-        //fs.writeFileSync(pathTmp, res);
-
-        console.log("downloadFile", downloadFile);
-      },
-    );
+        // The whole response has been received. Print out the result.
+        resp.on("end", async () => {
+          await fsPromises.writeFile(pathTmp, data, err => {
+            if (err) {
+              console.log("err: ", err);
+            } else {
+              console.log("File written successfully\n");
+            }
+          });
+        });
+      })
+      .on("error", err => {
+        console.log("Error: " + err.message);
+      });
   } catch (err) {
-    console.log(err);
+    console.log("error: ", err);
   }
-  console.log("start");
-
-  // const file = got(generatAvatarUrl)
-  //   .then(response => console.log(response.body))
-  //   .catch(error => console.log(error.response.body));
-  // console.log(file);
 
   next();
 }
+
 //для загрузки фото
 //минификация файла
 async function minifyImage(req, res, next) {
-  const files = await imagemin([`public/tmp/${req.file.filename}`], {
-    destination: "public/images",
-    plugins: [
-      imageminJpegtran(),
-      imageminPngquant({
-        quality: [0.6, 0.8],
+  console.log("pathTmp***", pathTmp);
+  const files = await imagemin([`${pathTmp}`], {
+    destination: `${pathImg}`, //куда сохр. файл
+
+    use: [
+      imageminSvgo({
+        plugins: [{ removeViewBox: false }],
       }),
     ],
   });
-
-  await fsPromises.unlink(req.file.path);
+  console.log(files);
+  //await fsPromises.unlink(req.file.path);
 
   next();
 }
 
 function returnImage(req, res) {
-  return res.status(200).json(req.file);
+  return res.status(200).send(res.data);
 }
 
 module.exports = {
