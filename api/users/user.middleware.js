@@ -1,24 +1,17 @@
 const https = require("https");
-const got = require("got");
-const getFileType = require("file-type");
+
 const path = require("path");
-//const fs = require("fs");
+const fs = require("fs");
 const { promises: fsPromises } = require("fs");
 
 const { AvatarGenerator } = require("random-avatar-generator");
 const multer = require("multer");
 
 const imagemin = require("imagemin");
-const imageminJpegtran = require("imagemin-jpegtran");
-const imageminPngquant = require("imagemin-pngquant");
 const imageminSvgo = require("imagemin-svgo");
 
-//const UserRandomAvatar = require("./user.generator");
-const pathTmp = path.join(__dirname, "../../public/tmp/avatar.svg");
+const pathTmp = path.join(__dirname, "../../public/tmp");
 const pathImg = path.join(__dirname, "../../public/images");
-
-console.log("pathTmp***", pathTmp);
-console.log("pathImg***", pathImg);
 
 //исп этот middleware для того что бы из файла вытянуть
 //расширение и при сохраннени на сервере его расширение
@@ -35,40 +28,36 @@ const storage = multer.diskStorage({
 const upload = multer({ storage }); //куда будет сохр файл
 
 async function generatorAvatar(req, res, next) {
-  try {
-    const generator = new AvatarGenerator();
-    let generatAvatarUrl = "";
-    // Simply get a random avatar
-    generatAvatarUrl = generator.generateRandomAvatar();
+  const generator = new AvatarGenerator();
+  let generatAvatarUrl = "";
+  // Simply get a random avatar
+  generatAvatarUrl = await generator.generateRandomAvatar();
 
-    console.log("generatAvatarUrl", generatAvatarUrl);
-
-    const request = await https
-      .get(`${generatAvatarUrl}`, resp => {
-        let data = "";
-
-        // A chunk of data has been recieved.
-        resp.on("data", chunk => {
-          data += chunk;
-        });
-
-        // The whole response has been received. Print out the result.
-        resp.on("end", async () => {
-          await fsPromises.writeFile(pathTmp, data, err => {
-            if (err) {
-              console.log("err: ", err);
-            } else {
-              console.log("File written successfully\n");
-            }
-          });
-        });
-      })
-      .on("error", err => {
-        console.log("Error: " + err.message);
+  const request = await https
+    .get(`${generatAvatarUrl}`, resp => {
+      let data = "";
+      // A chunk of data has been recieved.
+      resp.on("data", chunk => {
+        data += chunk;
       });
-  } catch (err) {
-    console.log("error: ", err);
-  }
+      // The whole response has been received. Print out the result.
+      resp.on("end", () => {
+        //   console.log("data");
+        const newNameAvatar = Date.now() + ".svg";
+        //   console.log("newNameAvatar", newNameAvatar);
+        fs.writeFileSync(`${pathTmp}/${newNameAvatar}`, data, err => {
+          if (err) {
+            console.log("err: ", err);
+          } else {
+            console.log("File written successfully\n");
+          }
+        });
+      });
+      resp.off("end", () => console.log("End"));
+    })
+    .on("error", err => {
+      console.log("Error: " + err.message);
+    });
 
   next();
 }
@@ -76,20 +65,33 @@ async function generatorAvatar(req, res, next) {
 //для загрузки фото
 //минификация файла
 async function minifyImage(req, res, next) {
-  console.log("pathTmp***", pathTmp);
-  const files = await imagemin([`${pathTmp}`], {
-    destination: `${pathImg}`, //куда сохр. файл
+  try {
+    const delFile = await fsPromises.readdir(pathTmp, err => {
+      if (err) {
+        console.error("error ReadDIR", err);
+      }
+    });
+    console.log("delFile: ", delFile);
 
-    use: [
-      imageminSvgo({
-        plugins: [{ removeViewBox: false }],
-      }),
-    ],
-  });
-  console.log(files);
-  //await fsPromises.unlink(req.file.path);
+    const files = await imagemin(["public/tmp/*.svg"], {
+      destination: "public/images",
+      plugins: [imageminSvgo()],
+    });
+    console.log("files", files);
+    /*
+    const delFile = await fsPromises.readdir(pathTmp, err => {
+      if (err) {
+        console.error("error ReadDIR", err);
+      }
+    });
+    console.log("delFile: ", delFile);
 
-  next();
+    delFile.map(async file => await fsPromises.unlink(`${pathTmp}/${file}`));*/
+
+    next();
+  } catch (err) {
+    console.error("err minifyImage", err);
+  }
 }
 
 function returnImage(req, res) {
