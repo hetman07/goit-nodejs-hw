@@ -1,4 +1,5 @@
 const https = require("https");
+const fetch = require("node-fetch");
 
 const path = require("path");
 const fs = require("fs");
@@ -32,34 +33,30 @@ async function generatorAvatar(req, res, next) {
   let generatAvatarUrl = "";
   // Simply get a random avatar
   generatAvatarUrl = await generator.generateRandomAvatar();
+  console.log("generatAvatarUrl", generatAvatarUrl);
 
-  const reqs = await https.get(`${generatAvatarUrl}`, resp => {
-    let data = "";
-    // A chunk of data has been recieved.
-    resp.on("data", async chunk => {
-      data += await chunk;
-    });
-    // The whole response has been received. Print out the result.
-    resp.on("end", async () => {
-      //   console.log("data");
-      const newNameAvatar = (await Date.now()) + ".svg";
-      console.log("newNameAvatar", newNameAvatar);
-      await fsPromises.writeFile(`${pathTmp}/${newNameAvatar}`, data, err => {
-        if (err) {
-          console.log("err: ", err);
-        } else {
-          console.log("File written successfully\n");
-        }
+  const url = `${generatAvatarUrl}`;
+
+  const get_data = async url => {
+    try {
+      const response = await fetch(url).then(data => {
+        const newNameAvatar = Date.now() + ".svg";
+        console.log("newNameAvatar", newNameAvatar);
+        fs.writeFileSync(`${pathTmp}/${newNameAvatar}`, data, err => {
+          if (err) {
+            console.log("err: ", err);
+          } else {
+            console.log("File written successfully\n");
+          }
+        });
       });
-    });
-  });
-
-  reqs.on("error", err => {
-    console.log("Error: " + err.message);
-  });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  await get_data(url);
 
   next();
-  reqs.end();
 }
 
 //для загрузки фото
@@ -78,15 +75,8 @@ async function minifyImage(req, res, next) {
       plugins: [imageminSvgo()],
     });
     console.log("files", files);
-    /*
-    const delFile = await fsPromises.readdir(pathTmp, err => {
-      if (err) {
-        console.error("error ReadDIR", err);
-      }
-    });
-    console.log("delFile: ", delFile);
 
-    delFile.map(async file => await fsPromises.unlink(`${pathTmp}/${file}`));*/
+    delFile.map(async file => await fsPromises.unlink(`${pathTmp}/${file}`));
 
     next();
   } catch (err) {
