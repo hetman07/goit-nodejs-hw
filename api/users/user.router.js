@@ -6,10 +6,10 @@ const UserMiddleware = require("./user.middleware");
 
 router.post(
   "/auth/register",
-  UserMiddleware.generatorAvatar, //созд аватарки при регистр
+  UserMiddleware.generatorAvatar,
+  UserMiddleware.minifyImage,
   UserController.validateEmailPassword,
   UserController.validateUniqueEmail,
-
   UserController.registerUser,
 );
 
@@ -30,14 +30,12 @@ router.patch(
   UserController.updateUserSub,
 );
 
-//router для загрузки и сохранения статических файлов
-router.get(
-  "/public/images",
-  //UserMiddleware.upload.none(),
-  //UserMiddleware.upload.single("avatar"), //метод single ждет одну картинку avatar в теле запроса будет наш файл для загрузки
-  UserMiddleware.generatorAvatar,
-  UserMiddleware.minifyImage,
-  UserMiddleware.returnImage,
+router.patch(
+  "/users/avatars",
+  UserController.authorize,
+  UserMiddleware.upload.single("avatar"), //метод single ждет одну картинку avatar в теле запроса будет наш файл для загрузки
+  UserMiddleware.minifyImageDownload,
+  UserMiddleware.updateUserUrl,
 );
 
 module.exports = router;

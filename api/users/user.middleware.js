@@ -1,5 +1,6 @@
 const https = require("https");
 const fetch = require("node-fetch");
+const imageminJpegtran = require("imagemin-jpegtran");
 
 const path = require("path");
 const fs = require("fs");
@@ -10,6 +11,8 @@ const multer = require("multer");
 
 const imagemin = require("imagemin");
 const imageminSvgo = require("imagemin-svgo");
+
+const UserModel = require("./user.model");
 
 const pathTmp = path.join(__dirname, "../../public/tmp");
 const pathImg = path.join(__dirname, "../../public/images");
@@ -33,23 +36,25 @@ async function generatorAvatar(req, res, next) {
   let generatAvatarUrl = "";
   // Simply get a random avatar
   generatAvatarUrl = await generator.generateRandomAvatar();
-  console.log("generatAvatarUrl", generatAvatarUrl);
 
   const url = `${generatAvatarUrl}`;
 
   const get_data = async url => {
     try {
-      const response = await fetch(url).then(data => {
-        const newNameAvatar = Date.now() + ".svg";
-        console.log("newNameAvatar", newNameAvatar);
-        fs.writeFileSync(`${pathTmp}/${newNameAvatar}`, data, err => {
-          if (err) {
-            console.log("err: ", err);
-          } else {
-            console.log("File written successfully\n");
-          }
+      const response = await fetch(url)
+        .then(res => res.text())
+        .then(body => {
+          console.log("body", body);
+          const newNameAvatar = Date.now() + ".svg";
+          console.log("newNameAvatar", newNameAvatar);
+          fs.writeFileSync(`${pathTmp}/${newNameAvatar}`, body, err => {
+            if (err) {
+              console.log("err: ", err);
+            } else {
+              console.log("File written successfully\n");
+            }
+          });
         });
-      });
     } catch (error) {
       console.log(error);
     }
@@ -63,20 +68,11 @@ async function generatorAvatar(req, res, next) {
 //минификация файла
 async function minifyImage(req, res, next) {
   try {
-    const delFile = await fsPromises.readdir(pathTmp, err => {
-      if (err) {
-        console.error("error ReadDIR", err);
-      }
-    });
-    console.log("delFile: ", delFile);
-
-    const files = await imagemin(["public/tmp/*.svg"], {
+    const file = await imagemin(["public/tmp/*.svg"], {
       destination: "public/images",
       plugins: [imageminSvgo()],
     });
-    console.log("files", files);
-
-    delFile.map(async file => await fsPromises.unlink(`${pathTmp}/${file}`));
+    console.log("files", file);
 
     next();
   } catch (err) {
@@ -84,13 +80,48 @@ async function minifyImage(req, res, next) {
   }
 }
 
-function returnImage(req, res) {
-  return res.status(200).send(res.data);
+async function minifyImageDownload(req, res, next) {
+  try {
+    const file = await imagemin(["public/tmp/*.jpg"], {
+      destination: "public/images",
+      plugins: [imageminJpegtran()],
+    });
+    await fsPromises.unlink(req.file.path);
+    next();
+  } catch (err) {
+    console.error("err minifyImage", err);
+  }
+}
+
+async function updateUserUrl(req, res) {
+  try {
+    const { filename } = req.file;
+    const { _id } = req.user;
+    const urlAvatar = `http://localhost:3000/images/${filename}`;
+    const findUser = await UserModel.findByIdAndUpdate(
+      _id,
+      {
+        $set: { avatarURL: urlAvatar },
+      },
+      {
+        new: true,
+      },
+    );
+
+    return res.status(200).json({
+      user: {
+        avatarURL: findUser.avatarURL,
+      },
+    });
+  } catch (err) {
+    console.error("err updateUserUrl: ", err);
+  }
 }
 
 module.exports = {
   minifyImage,
-  returnImage,
   upload,
   generatorAvatar,
+  minifyImageDownload,
+  updateUserUrl,
 };

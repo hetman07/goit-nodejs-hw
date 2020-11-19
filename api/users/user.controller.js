@@ -4,6 +4,8 @@ const {
 } = require("mongoose");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const path = require("path");
+const { promises: fsPromises } = require("fs");
 
 const UserModel = require("./user.model");
 const {
@@ -13,6 +15,8 @@ const {
   UnauthorizedError,
   ErrorUpdateUser,
 } = require("../errors/ErrorMessage");
+
+const pathTmp = path.join(__dirname, "../../public/tmp");
 
 class UserController {
   constructor() {
@@ -38,6 +42,7 @@ class UserController {
     if (validationResult.error) {
       throw new ErrorRegistrUser();
     }
+
     next();
   }
 
@@ -63,17 +68,26 @@ class UserController {
 
   async registerUser(req, res, next) {
     try {
+      const delFile = await fsPromises.readdir(pathTmp, err => {
+        if (err) {
+          console.error("error ReadDIR", err);
+        }
+      });
+
       const { password } = req.body;
       const hashedPassword = await bcryptjs.hash(password, 10);
       const addUser = await UserModel.create({
         ...req.body,
         password: hashedPassword,
+        avatarURL: `http://localhost:3000/images/${delFile[0]}`,
       });
+      delFile.map(async file => await fsPromises.unlink(`${pathTmp}/${file}`));
       //в return убрать секретные поля password/token
       return res.status(201).json({
         users: {
           email: addUser.email,
           subscription: addUser.subscription,
+          avatarURL: addUser.avatarURL,
         },
       });
     } catch (err) {

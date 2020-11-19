@@ -15,11 +15,11 @@ module.exports = class Server {
     this.server = null;
   }
 
-  start() {
+  async start() {
     this.initServer();
     this.initMiddleware();
     this.initRouters();
-    //await this.connectDb();
+    await this.connectDb();
     this.startListening();
   }
 
@@ -31,7 +31,7 @@ module.exports = class Server {
     this.server.use(cors({ origin: `http://localhost:${PORT}` }));
     this.server.use(express.json());
     this.server.use(morgan("dev"));
-    this.server.use(express.static("public")); //раздача статики
+    this.server.use(express.static("public"));
   }
 
   async connectDb() {
