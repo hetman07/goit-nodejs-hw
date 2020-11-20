@@ -1,3 +1,5 @@
+const crypto = require("crypto");
+
 const Joi = require("joi");
 const {
   Types: { ObjectId },
@@ -8,6 +10,7 @@ const path = require("path");
 const { promises: fsPromises } = require("fs");
 
 const UserModel = require("./user.model");
+const TokenModel = require("../token/Token");
 const {
   ErrorRegistrUser,
   ErrorFindUser,
@@ -82,6 +85,7 @@ class UserController {
         avatarURL: `http://localhost:3000/images/${delFile[0]}`,
       });
       delFile.map(async file => await fsPromises.unlink(`${pathTmp}/${file}`));
+      const tokenData = generateOneTimePassword();
       //в return убрать секретные поля password/token
       return res.status(201).json({
         users: {
@@ -93,6 +97,34 @@ class UserController {
     } catch (err) {
       console.error(err);
       next(err);
+    }
+  }
+
+  async generateOneTimePassword() {
+    //генерируем токен для верификации
+    const token = await crypto.randomBytes(16).toString("hex");
+    //добавляем временный токен для верификации нового пользователя
+    const tokenData = await TokenModel.create({
+      token,
+      userId: addUser._id,
+    });
+    return tokenData;
+  }
+
+  async sendVerificationEmail() {
+    try {
+      onst msg = {
+        to: "pvp071984@gmail.com", // Change to your recipient
+        from: "pvp071984@gmail.com", // Change to your verified sender
+        subject: "Sending with SendGrid is Fun",
+        text: "and easy to do anywhere, even with Node.js",
+        html: "<strong>and easy to do anywhere, even with Node.js</strong>",
+      };
+      
+      const email = await sgMail.send(msg);
+      console.log("Email sent");
+    } catch (err) {
+      console.error("sendVerification: ", err);
     }
   }
 
