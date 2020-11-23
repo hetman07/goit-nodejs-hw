@@ -42,3 +42,12 @@ exports.ErrorUpdateUser = class ErrorUpdateUser extends Error {
     this.message = "Subscription is wrong.";
   }
 };
+
+exports.ErrorNotFoundUser = class ErrorNotFoundUser extends Error {
+  constructor(name) {
+    super(name);
+    this.status = 404;
+    this.stack = "";
+    this.message = "User not found.";
+  }
+};

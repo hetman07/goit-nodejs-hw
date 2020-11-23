@@ -1,4 +1,7 @@
+require("dotenv").config();
 const crypto = require("crypto");
+const sgMail = require("@sendgrid/mail");
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const Joi = require("joi");
 const {
@@ -17,7 +20,9 @@ const {
   ErrorNotValidateUser,
   UnauthorizedError,
   ErrorUpdateUser,
+  ErrorNotFoundUser,
 } = require("../errors/ErrorMessage");
+const Token = require("../token/Token");
 
 const pathTmp = path.join(__dirname, "../../public/tmp");
 
@@ -32,6 +37,10 @@ class UserController {
 
   get login() {
     return this._login.bind(this);
+  }
+
+  get registerUser() {
+    return this._registerUser.bind(this);
   }
 
   validateEmailPassword(req, res, next) {
@@ -69,7 +78,7 @@ class UserController {
     }
   }
 
-  async registerUser(req, res, next) {
+  async _registerUser(req, res, next) {
     try {
       const delFile = await fsPromises.readdir(pathTmp, err => {
         if (err) {
@@ -85,7 +94,10 @@ class UserController {
         avatarURL: `http://localhost:3000/images/${delFile[0]}`,
       });
       delFile.map(async file => await fsPromises.unlink(`${pathTmp}/${file}`));
-      const tokenData = generateOneTimePassword();
+
+      const tokenData = await this.generateOneTimePassword(addUser._id);
+
+      await this.sendVerificationEmail(tokenData.token, addUser.email);
       //в return убрать секретные поля password/token
       return res.status(201).json({
         users: {
@@ -100,32 +112,59 @@ class UserController {
     }
   }
 
-  async generateOneTimePassword() {
+  async generateOneTimePassword(userId) {
     //генерируем токен для верификации
     const token = await crypto.randomBytes(16).toString("hex");
     //добавляем временный токен для верификации нового пользователя
     const tokenData = await TokenModel.create({
       token,
-      userId: addUser._id,
+      userId,
     });
     return tokenData;
   }
 
-  async sendVerificationEmail() {
+  async sendVerificationEmail(token, email) {
     try {
-      onst msg = {
-        to: "pvp071984@gmail.com", // Change to your recipient
+      const msg = {
+        to: email, // Change to your recipient
         from: "pvp071984@gmail.com", // Change to your verified sender
         subject: "Sending with SendGrid is Fun",
-        text: "and easy to do anywhere, even with Node.js",
-        html: "<strong>and easy to do anywhere, even with Node.js</strong>",
+
+        html: `Please verify your email by this <a href=http://localhost:3000/auth/verify/${token}>link</a>`,
       };
-      
-      const email = await sgMail.send(msg);
+
+      await sgMail.send(msg);
       console.log("Email sent");
     } catch (err) {
       console.error("sendVerification: ", err);
     }
+  }
+
+  async verifycationUser(req, res) {
+    const {
+      params: { verificationToken },
+    } = req;
+
+    const tokenData = await TokenModel.findOne({
+      token: verificationToken,
+    });
+
+    if (!tokenData) {
+      return res.status(401).json({ message: "Your token is invalid" });
+    }
+    const findUser = await UserModel.findById(tokenData.userId);
+
+    if (!findUser) {
+      return res.status(401).json({ message: "Your token is invalid" });
+    }
+
+    findUser.verificationToken = true;
+    await findUser.save();
+
+    //удалить из коллекци токенов уже верифицированную запись
+    const deleteTokenData = await TokenModel.findByIdAndDelete(tokenData._id);
+
+    return res.status(200).send("Your account is verified");
   }
 
   async _login(req, res, next) {
@@ -244,10 +283,7 @@ class UserController {
 
   validateUpdateUser(req, res, next) {
     const validationRules = Joi.object({
-      // email: Joi.string(),
-      // password: Joi.string(),
       subscription: Joi.string().valid("free", "pro", "premium").required(),
-      // token: Joi.string(),
     });
 
     const validationResult = validationRules.validate(req.body);
