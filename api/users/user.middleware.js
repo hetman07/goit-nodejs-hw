@@ -44,9 +44,8 @@ async function generatorAvatar(req, res, next) {
       const response = await fetch(url)
         .then(res => res.text())
         .then(body => {
-          console.log("body", body);
           const newNameAvatar = Date.now() + ".svg";
-          console.log("newNameAvatar", newNameAvatar);
+
           fs.writeFileSync(`${pathTmp}/${newNameAvatar}`, body, err => {
             if (err) {
               console.log("err: ", err);
@@ -72,7 +71,6 @@ async function minifyImage(req, res, next) {
       destination: "public/images",
       plugins: [imageminSvgo()],
     });
-    console.log("files", file);
 
     next();
   } catch (err) {

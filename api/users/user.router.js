@@ -21,6 +21,8 @@ router.post(
 
 router.post("/auth/logout", UserController.authorize, UserController.logout);
 
+router.get("/auth/verify/:verificationToken", UserController.verifycationUser);
+
 router.get("/users/current", UserController.authorize, UserController.current);
 
 router.patch(

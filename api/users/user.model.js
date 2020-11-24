@@ -25,6 +25,10 @@ const UserSchema = new Schema({
     required: false,
     default: "",
   },
+  verificationToken: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 UserSchema.static.updateToken = updateToken;
